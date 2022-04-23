@@ -1,0 +1,52 @@
+#! /bin/bash
+# $1 executable name
+# $2 baud rate
+# $3...n c or asm files
+if
+    [ $# -lt 3 ]
+then
+    echo "Usage:"
+    echo "beam-avr <executable name> <baud rate> <c or asm files>..."
+    echo "example: beam-avr my_program 57600 my_program.c my_program.asm"
+    exit -1
+fi
+
+case $1 in
+*.*)
+    echo "Please enter the executable name (first_parameter) without an extension" && exit -1
+    ;;
+esac
+
+out_files=()
+
+for ((i = 3; i <= $#; i++)); do
+    # file_name without extension: ${!i%.*}
+    # file_name with extension: ${!i}
+    # just the extension: ${!i##*.}
+    echo "Working on ${!i}..."
+    case "${!i}" in
+    *.c)
+        echo "Compiling file: '${!i}'"
+        avr-gcc -O1 -DF_CPU=16000000UL -mmcu=atmega328p -c -o ${!i%.*}_${!i##*.}.o ${!i} || exit -1
+        out_files+=(${!i%.*}_${!i##*.}.o)
+        ;;
+    *.S) ;&
+
+    *.s) ;&
+
+    *.asm)
+        echo "Assembling file: '${!i}'"
+        avr-as -mmcu=atmega328p -c ${!i} -o ${!i%.*}_${!i##*.}.o || exit -1
+        out_files+=(${!i%.*}_${!i##*.}.o)
+        ;;
+    *)
+        echo "Unknown file type or missing extension" && exit -1
+        ;;
+    esac
+done
+
+echo "Linking files ${out_files[@]} to executable: '$1'"
+avr-gcc -mmcu=atmega328p ${out_files[@]} -o $1 || exit -1
+
+avr-objcopy -O ihex -R .eeprom $1 $1.hex || exit -1
+sudo avrdude -v -p atmega328p -c arduino -P /dev/ttyUSB0 -b $2 -D -U flash:w:$1.hex:i
