@@ -1,5 +1,5 @@
 .text 
-.global lightCheck
+.global checkLight
 
 ; Analog 2 Digital Converter Regs
 .EQU ADCL,  0x0078
@@ -8,7 +8,7 @@
 .EQU ADMUX, 0x007C   
 .EQU ADSC,  6
 
-lightCheck:
+checkLight:
 	; Analog IO Inits
   	LDI R16, 0B00000000
   	OUT DDRC, R16

@@ -1,27 +1,33 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define STEP_STATE_LEN 4
-#define TIMER_START_VAL 0x00
-#define PRESCALER_1024_TCCR0B (1 << CS00) | (1 << CS02); // Timer mode with 1024 prescaler
+#define TIMER_START_VAL 0
+#define PRESCALER_1024_TCCR0B 5; // Timer mode with 1024 prescaler
+
+char rotateMotor(char state, char direction);
 
 enum StepperState
 {
-    Orange,
-    Yellow,
-    Pink,
-    Blue,
+    Orange1 = 0,
+    Orange2,
+    Yellow1,
+    Yellow2,
+    Pink1,
+    Pink2,
+    Blue1,
+    Blue2
 };
 
 enum Direction
 {
-    Stop,
+    Stop = 0,
     Clockwise,
     CounterClockwise,
 };
 
-int currState = Orange;
-int currDirection = Clockwise;
+// using only 8 bits
+char currState = Orange1;
+char currDirection = Clockwise;
 
 // delay handler in between motor steps
 ISR(TIMER0_OVF_vect)
@@ -29,11 +35,11 @@ ISR(TIMER0_OVF_vect)
     // pause the timer0
     TCCR0B = 0;
 
-    if (currDirection == 1)
-        ;
+    currState = rotateMotor(currState, currDirection);
+
     // restart timer
-    TCCR0B = PRESCALER_1024_TCCR0B;
     TCNT0 = TIMER_START_VAL;
+    TCCR0B = PRESCALER_1024_TCCR0B;
 }
 
 int main(int argc, char const *argv[])
@@ -46,6 +52,9 @@ int main(int argc, char const *argv[])
     TIMSK0 = (1 << TOIE0); // Enable timer0 overflow interrupt (TOIE0)
 
     sei(); // Enable global interrupts
+
+    while (1)
+        ;
 
     return 0;
 }
