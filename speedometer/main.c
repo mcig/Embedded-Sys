@@ -2,8 +2,13 @@
 
 #define TIMER_START_VAL 0xf0
 #define PRESCALER_1024_TCCR0B 5; // Timer mode with 1024 prescaler
+#define ABS(a) ((a) < 0 ? -(a) : (a))
+
+#define MID_POINT 500
 
 char rotateMotor(char state, char direction);
+int checkLight();
+char getMotorDirection(int currLight);
 
 enum StepperState
 {
@@ -25,8 +30,8 @@ enum Direction
 };
 
 // using only 8 bits
-char currState = Orange1;
-char currDirection = Clockwise;
+char motorState = Orange1;
+char motorDirection = Stop;
 
 // delay handler in between motor steps
 ISR(TIMER0_OVF_vect)
@@ -34,7 +39,7 @@ ISR(TIMER0_OVF_vect)
     // pause the timer0
     TCCR0B = 0;
 
-    currState = rotateMotor(currState, currDirection);
+    motorState = rotateMotor(motorState, motorDirection);
 
     // restart timer
     TCNT0 = TIMER_START_VAL;
@@ -53,7 +58,24 @@ int main(int argc, char const *argv[])
     sei(); // Enable global interrupts
 
     while (1)
-        ;
+    {
+        int currLight = checkLight();
+
+        motorDirection = getMotorDirection(currLight);
+    }
 
     return 0;
+}
+
+char getMotorDirection(int currLight)
+{
+    // int lightDiff = ABS(currLight - targetLight);
+    if (currLight < MID_POINT)
+    {
+        return Clockwise;
+    }
+    else
+    {
+        return CounterClockwise;
+    }
 }
