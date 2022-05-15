@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define TIMER_START_VAL 0
+#define TIMER_START_VAL 0xf0
 #define PRESCALER_1024_TCCR0B 5; // Timer mode with 1024 prescaler
 
 char rotateMotor(char state, char direction);
@@ -27,7 +27,7 @@ enum Direction
 
 // using only 8 bits
 char currState = Orange1;
-char currDirection = Clockwise;
+char currDirection = CounterClockwise;
 
 // delay handler in between motor steps
 ISR(TIMER0_OVF_vect)
