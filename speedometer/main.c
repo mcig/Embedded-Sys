@@ -1,4 +1,3 @@
-#include <avr/io.h>
 #include <avr/interrupt.h>
 
 #define TIMER_START_VAL 0xf0
@@ -27,7 +26,7 @@ enum Direction
 
 // using only 8 bits
 char currState = Orange1;
-char currDirection = CounterClockwise;
+char currDirection = Clockwise;
 
 // delay handler in between motor steps
 ISR(TIMER0_OVF_vect)

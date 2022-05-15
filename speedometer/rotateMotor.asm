@@ -19,7 +19,7 @@
 ; takes in 2 parameters, k = 2
 ; R24: current step motor state
 ; R22: the direction
-
+; RET: R24: next state
 rotateMotor:
     ; if direction is stop, do nothing
     cpi r22, STOP
@@ -29,7 +29,7 @@ rotateMotor:
 rotateMotor_rotate: 
     ; if direction is clockwise, increment the current step motor state
     cpi r22, CLOCKWISE
-    brsh nextStateRight
+    breq nextStateRight
 
     cpi r24, 0
     brne skipResettingLeft
@@ -55,6 +55,7 @@ getStateOutput:
     rjmp lookupTable
 outputToPorts:    
     out PORTD, r18
+    ; returns r24 which is next state
     ret
 
 lookupTable:
